@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  nginx:
+    container_name: nginx-server
+    restart: always
+    build:
+      context: ./nginx
+    ports:
+      - '80:80'
+
+  db:
+    container_name: postgres-db
+    image: postgres
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - pg_data:/var/lib/postgresql/data/ 
+
+  pgadmin:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASS}
+    ports:
+      - "5050:80"
+
+  api:
+    container_name: nestapi
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000' # host : docker
+    env_file: .env
+    depends_on:
+      - db
+
+volumes:
+  pg_data:
